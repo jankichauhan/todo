@@ -1,9 +1,8 @@
-package com.janki.simpletodo;
+package com.janki.simpletodo.activities;
 
 import android.content.Intent;
-import android.opengl.EGLExt;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,38 +11,38 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.janki.simpletodo.R;
+import com.janki.simpletodo.models.Item;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
-import static android.widget.AdapterView.*;
+import static android.widget.AdapterView.OnItemClickListener;
 
 
 public class TodoActivity extends ActionBarActivity {
 
-    private ArrayList<String> todoItems;
-    private ArrayAdapter<String> todoAdapter;
-    private ListView lvItems;
     private final int REQUEST_CODE = 20;
-
+    private List<Item> todoItems;
+    private ArrayAdapter<Item> todoAdapter;
+    private ListView lvItems;
     private EditText etNewItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo);
-        readItem();
+        readItems();
         etNewItem = (EditText) findViewById(R.id.etNewItems);
         lvItems = (ListView) findViewById(R.id.lvitems);
-//       populateArrayItems();
-        todoAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, todoItems);
+        todoAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_list_item_1, todoItems);
         lvItems.setAdapter(todoAdapter);
         setListViewListener();
 
     }
-
-
 
 
     @Override
@@ -60,21 +59,21 @@ public class TodoActivity extends ActionBarActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapter, View item, int position, long id) {
 
+                todoItems.get(position).delete();
                 todoItems.remove(position);
                 todoAdapter.notifyDataSetChanged();
-                saveItem();
                 return true;
             }
         });
 
-        lvItems.setOnItemClickListener(new OnItemClickListener(){
+        lvItems.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Intent i = new Intent(TodoActivity.this, EditItemActivity.class);
                 i.putExtra("position", position);
-                i.putExtra("value", todoItems.get(position));
+                i.putExtra("value", todoItems.get(position).getName());
 
                 startActivityForResult(i, REQUEST_CODE);
             }
@@ -86,15 +85,14 @@ public class TodoActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(resultCode == RESULT_OK && requestCode == REQUEST_CODE)
-        {
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
             String value = data.getExtras().getString("value");
-            int position = data.getExtras().getInt("position",0);
+            int position = data.getExtras().getInt("position", 0);
 
-            todoItems.remove(position);
-            todoItems.add(position,value);
+            Item editItem = todoItems.get(position);
+            editItem.setName(value);
+            editItem.save();
             todoAdapter.notifyDataSetChanged();
-            saveItem();
         }
     }
 
@@ -112,46 +110,17 @@ public class TodoActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void populateArrayItems() {
-
-        todoItems = new ArrayList<String>();
-        todoItems.add("Item 1");
-        todoItems.add("Item 2");
-        todoItems.add("Item 3");
-    }
-
-    public void onAddedItem(View v)
-    {
+    public void onAddedItem(View v) {
         String itemText = etNewItem.getText().toString();
-        todoAdapter.add(itemText);
+        Item newItem = new Item(itemText);
+        todoAdapter.add(newItem);
+        newItem.save();
         etNewItem.setText("");
-        saveItem();
     }
 
-    private void readItem()
-    {
-        File fileDir = getFilesDir();
-        File todoFile = new File(fileDir, "todo.txt");
-        try{
-            todoItems = new ArrayList<String>(FileUtils.readLines(todoFile));
-        }
-        catch (IOException e)
-        {
-            todoItems = new ArrayList<String>();
-        }
-    }
+    private void readItems() {
+        todoItems = Item.getAll();
 
-    private void saveItem()
-    {
-        File fileDir = getFilesDir();
-        File todoFile = new File(fileDir, "todo.txt");
-        try{
-            FileUtils.writeLines(todoFile, todoItems);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
     }
 
 }

@@ -1,4 +1,4 @@
-package com.janki.simpletodo;
+package com.janki.simpletodo.activities;
 
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+
+import com.janki.simpletodo.R;
 
 
 public class EditItemActivity extends ActionBarActivity {
