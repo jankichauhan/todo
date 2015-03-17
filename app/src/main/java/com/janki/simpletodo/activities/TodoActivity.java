@@ -1,44 +1,42 @@
 package com.janki.simpletodo.activities;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import com.janki.simpletodo.R;
+import com.janki.simpletodo.adapters.ItemAdapter;
+import com.janki.simpletodo.fragments.AddItemDialog;
 import com.janki.simpletodo.models.Item;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import static android.widget.AdapterView.OnItemClickListener;
+import static com.janki.simpletodo.fragments.AddItemDialog.AddItemDialogListener;
+import static com.janki.simpletodo.fragments.AddItemDialog.EditItemDialogListener;
 
-
-public class TodoActivity extends ActionBarActivity {
+public class TodoActivity extends FragmentActivity implements AddItemDialogListener, EditItemDialogListener {
 
     private final int REQUEST_CODE = 20;
     private List<Item> todoItems;
-    private ArrayAdapter<Item> todoAdapter;
+    private ItemAdapter todoAdapter;
     private ListView lvItems;
-    private EditText etNewItem;
+    //  private EditText etNewItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_todo);
         readItems();
-        etNewItem = (EditText) findViewById(R.id.etNewItems);
+        // etNewItem = (EditText) findViewById(R.id.etNewItems);
         lvItems = (ListView) findViewById(R.id.lvitems);
-        todoAdapter = new ArrayAdapter<Item>(this, android.R.layout.simple_list_item_1, todoItems);
+        todoAdapter = new ItemAdapter(this, todoItems);
         lvItems.setAdapter(todoAdapter);
         setListViewListener();
 
@@ -71,11 +69,14 @@ public class TodoActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Intent i = new Intent(TodoActivity.this, EditItemActivity.class);
-                i.putExtra("position", position);
-                i.putExtra("value", todoItems.get(position).getName());
+//                Intent i = new Intent(TodoActivity.this, EditItemActivity.class);
+//                i.putExtra("position", position);
+//                i.putExtra("value", todoItems.get(position).getName());
+//
+//                startActivityForResult(i, REQUEST_CODE);
 
-                startActivityForResult(i, REQUEST_CODE);
+                DialogFragment addDialog = AddItemDialog.newInstance(todoItems.get(position));
+                addDialog.show(getFragmentManager(), "add_item_dialog");
             }
         });
 
@@ -96,6 +97,11 @@ public class TodoActivity extends ActionBarActivity {
         }
     }
 
+    public void addNewItem(View view) {
+        DialogFragment addDialog = new AddItemDialog();
+        addDialog.show(getFragmentManager(), "add_item_dialog");
+    }
+
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -110,17 +116,27 @@ public class TodoActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onAddedItem(View v) {
-        String itemText = etNewItem.getText().toString();
-        Item newItem = new Item(itemText);
-        todoAdapter.add(newItem);
-        newItem.save();
-        etNewItem.setText("");
+    @Override
+    public void onAddItem(Item item) {
+        item.setPosition(todoItems.size());
+        todoAdapter.add(item);
+        item.save();
+    }
+
+    @Override
+    public void onEditItem(Item item, Long id) {
+        todoItems.set(item.getPosition(), item);
+        todoAdapter.notifyDataSetChanged();
+        Item editItem = Item.load(Item.class, id);
+        editItem.setName(item.getName());
+        editItem.setDate(item.getDate());
+        editItem.save();
     }
 
     private void readItems() {
         todoItems = Item.getAll();
 
     }
+
 
 }

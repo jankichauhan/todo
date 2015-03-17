@@ -16,13 +16,40 @@ public class Item extends Model {
     @Column(name = "name")
     public String name;
 
+    @Column(name = "date")
+    public String date;
+
+    public int position;
+
     public Item() {
         super();
     }
 
-    public Item(String name) {
+    public Item(String name, String date, int position) {
         super();
         this.name = name;
+        this.date = date;
+        this.position = position;
+    }
+
+    public static List<Item> getAll() {
+        return new Select().from(Item.class).execute();
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public String getName() {
@@ -36,9 +63,5 @@ public class Item extends Model {
     @Override
     public String toString() {
         return name;
-    }
-
-    public static List<Item> getAll() {
-        return new Select().from(Item.class).execute();
     }
 }

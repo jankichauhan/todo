@@ -23,18 +23,10 @@
         android:layout_height="wrap_content"
         android:text="@string/add_button_label"
         android:id="@+id/btnAdd"
+        android:onClick="addNewItem"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="onAddedItem" />
+        android:layout_centerHorizontal="true" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/etNewItems"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:hint="@string/add_hint_label"
-        android:ems="10"/>
+
 
 </RelativeLayout>
